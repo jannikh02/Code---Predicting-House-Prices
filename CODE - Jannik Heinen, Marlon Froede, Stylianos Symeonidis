@@ -1,0 +1,46 @@
+# Load necessary libraries
+library(tidyverse)
+library(caret)
+
+# Load Dataset
+data <- read.csv("utrechthousingsmall.csv")
+
+# Inspect Dataset
+str(data)
+summary(data)
+
+
+# Define Predictor as well as Response variable
+predictors <- data %>%
+  select(-retailvalue)  
+
+# 'retailvalue' Column to predict
+
+response <- data$retailvalue
+
+# Split Data into Training and Testing sets
+set.seed(123)  # For reproducibility
+trainIndex <- createDataPartition(response, p = 0.8, list = FALSE)
+trainData <- data[trainIndex, ]
+testData <- data[-trainIndex, ]
+
+# Linear regression model
+model <- lm(retailvalue ~ ., data = trainData)
+
+# Summarize model
+summary(model)
+
+# Make predictions
+predictions <- predict(model, testData)
+
+# Evaluate performance
+postResample(predictions, testData$retailvalue)
+
+# Visualization: Plot observed vs predicted values
+ggplot(testData, aes(x = retailvalue, y = predictions)) +
+  geom_point() +
+  geom_smooth(method = "lm", col = "blue") +
+  labs(title = "Observed vs Predicted Retail Value",
+       x = "Observed Retail Value",
+       y = "Predicted Retail Value") +
+  theme_minimal()
